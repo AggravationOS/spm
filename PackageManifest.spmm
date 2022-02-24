@@ -1,0 +1,49 @@
+// /etc/spm/PackageManifest.spmm
+SPM_PACKAGE_MANIFEST
+{
+    PACKAGE
+    {
+        $name = linux
+        $repositoryUrl = https://gitlab.com/linux-kernel/stable.git
+        @important = True
+        INSTALL_COMMANDS
+        [
+            make xconfig
+            make -j $THREADS
+            make install
+        ]
+        FILES
+        [
+
+        ]
+    }
+    PACKAGE
+    {
+        $name = spm
+        $repositoryUrl = https://github.com/AggravationOS/spm.git
+        @important = True
+        INSTALL_COMMANDS
+        [
+            make -j $THREADS
+            make install
+        ]
+        FILES
+        [
+            /usr/bin/spm
+        ]
+    }
+    PACKAGE
+    {
+        $name = spm-package-manifest
+        $repositoryUrl = https://github.com/AggravationOS/spm-package-manifest.git
+        @important = True
+        INSTALL_COMMANDS
+        [
+            make install
+        ]
+        FILES
+        [
+            /etc/spm/PackageManifest.spm
+        ]
+    }
+}
