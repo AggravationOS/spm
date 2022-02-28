@@ -1,2 +1,0 @@
-/home/mrcarrot/spm/bin/Release/net6.0/linux-x64/publish/spm.pdb
-/home/mrcarrot/spm/bin/Release/net6.0/linux-x64/publish/spm
