@@ -1,30 +1,39 @@
+//Uncomment for testing certain features without root access.
+//Yes, I am aware that this is not a good way to do this.
+//If you wanted a well-written package manager, you would not be using spm.
+//#define ROOT_BYPASS
+
 using System;
 using System.IO;
 using System.Net;
 using System.Diagnostics;
+using System.Linq;
 
-public class Program
+public unsafe class Program
 {
     public static Dictionary<string, string> BuildVars = new Dictionary<string, string>();
     public static Dictionary<string, Package> Packages = new Dictionary<string, Package>();
+
     public static void Main(string[] args)
     {
+        #if !ROOT_BYPASS
         if(Environment.UserName != "root")
         {
             Console.WriteLine("spm must be run as root!");
             return;
         }
+        #endif
         if(args.Length == 0)
         {
-            Console.WriteLine("spm v1.0.0: The World's Worst LinuxⓇ Package Manager™\nCommands: spm install <package> \nspm uninstall <package> \nspm update \nspm update-manifest");
+            Console.WriteLine("spm v1.0.0: The World's Worst LinuxⓇ  Package Manager™\nFlags: \n -E | --eject <package>: Uninstalls the specified package. \n -R | --refresh: Updates the system. \n -s | --sync <package>: Installs or updates the specified package. \n -S | --segfault: Triggers a segmentation fault.");
         }
         else
         {
-            if(args[0] == "install")
+            if(args[0] == "-s" || args[0] == "--sync")
             {
                 if(args.Length == 1)
                 {
-                    Console.WriteLine("Usage: spm install <package>");
+                    Console.WriteLine($"Usage: spm {args[0]} <package>");
                 }
                 else
                 {
@@ -34,20 +43,25 @@ public class Program
                     }
                 }
             }
-            if(args[0] == "uninstall")
+            if(args[0] == "-S" || args[0] == "--segfault")
+            {
+                int* x = (int*)-1;
+                *x += 3;
+            }
+            if(args[0] == "-E" || args[0] == "--eject")
             {
                 if(args.Length == 1)
                 {
-                    Console.WriteLine("Usage: spm uninstall <package>");
+                    Console.WriteLine($"Usage: spm {args[0]} <package>");
+                }
+                else
+                {
+                    //TODO: Implement uninstall
                 }
             }
-            if(args[0] == "update")
+            if(args[0] == "-R" || args[0] == "--refresh")
             {
-                //Implement update
-            }
-            if(args[0] == "update-manifest")
-            {
-                //Implement manifest update
+                //TODO: Implement update
             }
         }
     }
@@ -58,7 +72,8 @@ public class Program
     /// <param name="command"></param>
     public static void ExecuteShellCommand(string command)
     {
-        Process.Start(@"/usr/bin/pwsh", $"-Command \"{command}\"");
+        var process = Process.Start("pwsh", $"-Command \"{command}\"");
+        process.WaitForExit();
     }
 
     public static void InstallPackage(string package)
@@ -91,6 +106,8 @@ public class Package
     public string Description { get; }
     public string CloneURL { get; }
     public List<string> InstallCommands { get; }
+    public List<Package> Dependencies { get; }
+    public List<Package> Dependents { get; }
 
     public Package(string name, string description, string cloneURL)
     {
@@ -98,5 +115,12 @@ public class Package
         Description = description;
         CloneURL = cloneURL;
         InstallCommands = new List<string>();
+        Dependencies = new List<Package>();
+        Dependents = new List<Package>();
+    }
+    public Package(string name, string description, string cloneURL, IEnumerable<string> installCommands, IEnumerable<Package> dependencies) : this(name, description, cloneURL)
+    {
+        InstallCommands = installCommands.ToList();
+        Dependencies = dependencies.ToList();
     }
 }
